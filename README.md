@@ -31,3 +31,6 @@ variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) under
   All signed-in users share the same data.
 - The login uses email addresses as usernames (that is how Supabase Auth works).
 - To move your old data from the Claude artifact version, re-enter it on the Reports page.
+
+
+http://localhost:51030
