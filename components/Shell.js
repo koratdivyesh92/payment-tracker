@@ -3,11 +3,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase";
+import Modal from "./Modal";
 
 const LINKS = [["/", "Dashboard"], ["/reports", "Reports"], ["/settings", "Settings"]];
 
 export default function Shell({ children }) {
   const [ok, setOk] = useState(false);
+  const [out, setOut] = useState(false);
   const router = useRouter();
   const path = usePathname();
 
@@ -24,17 +26,26 @@ export default function Shell({ children }) {
   return (
     <div className="wrap">
       <header>
-        <h1>Payment Tracker</h1>
+        <h1>💳 Payment Tracker</h1>
         <div className="grp">
           <nav>
             {LINKS.map(([href, label]) => (
               <Link key={href} href={href} className={path === href ? "on" : ""}>{label}</Link>
             ))}
           </nav>
-          <button className="btn ghost" onClick={() => supabase.auth.signOut()}>Sign out</button>
+          <button className="btn light" onClick={() => setOut(true)}>Sign out</button>
         </div>
       </header>
       {children}
+      {out && (
+        <Modal title="Sign out?" onClose={() => setOut(false)}>
+          <p className="msg">Are you sure you want to sign out?</p>
+          <div className="acts">
+            <button className="btn ghost" onClick={() => setOut(false)}>Cancel</button>
+            <button className="btn" onClick={() => supabase.auth.signOut()}>Sign out</button>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

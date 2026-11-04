@@ -30,22 +30,22 @@ export default function Dashboard() {
   return (
     <Shell>
       <div className="cards">
-        <div className="card"><small>Total earning</small><b>{money(earn)}</b></div>
-        <div className="card c-ok"><small>Total paid</small><b>{money(paidAmt)}</b></div>
-        <div className="card c-warn"><small>Total pending</small><b>{money(earn - paidAmt)}</b></div>
+        <div className="card g1"><small>Total earning</small><b>{money(earn)}</b></div>
+        <div className="card g2"><small>Total paid</small><b>{money(paidAmt)}</b></div>
+        <div className="card g3"><small>Total pending</small><b>{money(earn - paidAmt)}</b></div>
       </div>
       <div className="panel">
         <div className="bar"><h2>Bi-weekly payments</h2></div>
         <div className="scroll">
-          <table>
+          <table className="rt">
             <thead><tr><th>Date range</th><th className="num">Count</th><th className="num">Amount</th><th>Payment status</th></tr></thead>
             <tbody>
               {keys.map((k) => (
                 <tr key={k}>
-                  <td>{fmt(k)} – {fmt(addDays(k, 13))}</td>
-                  <td className="num">{map[k].count}</td>
-                  <td className="num">{money(map[k].amount)}</td>
-                  <td>
+                  <td data-label="Date range">{fmt(k)} – {fmt(addDays(k, 13))}</td>
+                  <td data-label="Count" className="num">{map[k].count}</td>
+                  <td data-label="Amount" className="num">{money(map[k].amount)}</td>
+                  <td data-label="Status">
                     <button className={"badge " + (paid.has(k) ? "paid" : "pending")} onClick={() => toggle(k)}>
                       {paid.has(k) ? "Paid" : "Pending"}
                     </button>

@@ -19,8 +19,8 @@ export default function Login() {
 
   return (
     <div className="wrap">
-      <form className="panel" onSubmit={submit} style={{ maxWidth: 380, margin: "12vh auto 0" }}>
-        <h1 style={{ marginBottom: 16 }}>Payment Tracker</h1>
+      <form className="panel login" onSubmit={submit}>
+        <h1 style={{ marginBottom: 16 }}>💳 Payment Tracker</h1>
         <div className="f"><label>Email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label></div>
         <div className="f"><label>Password<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label></div>
         <div className="err">{err}</div>

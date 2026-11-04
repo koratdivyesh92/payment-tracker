@@ -55,3 +55,18 @@ Only people you create in Supabase can sign in.
 - Login fails: confirm the user exists in Authentication -> Users and is confirmed.
 - Vercel asks you to log in to view the site: Settings -> Deployment Protection -> turn off.
 - Data is shared by all signed-in users. Usernames are email addresses.
+
+## Uploading data from Excel (Reports page -> Upload Excel)
+Use an .xlsx file. The first sheet must have this header row (column order can change):
+
+| Date       | ID   | From | To | Missing  | Undelivered |
+|------------|------|------|----|----------|-------------|
+| 2026-11-02 | A101 | 2    | 50 | 2, 3, 15 | 23, 45      |
+| 2026-11-03 | A102 | 51   | 90 |          |             |
+
+- Date: a real Excel date, or text like 2026-11-02 (required)
+- ID: any label (required)
+- From / To: whole numbers, To not less than From (required)
+- Missing / Undelivered: numbers separated by commas, ranges like 10-12 allowed; leave blank if none
+- The upload form has a "Download template" button that creates an empty file with only the header row (no files needed on the server). You can also upload any .xlsx from your computer.
+- After updating the project, run `npm install` once to add the Excel packages.
