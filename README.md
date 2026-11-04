@@ -1,36 +1,57 @@
 # Payment Tracker (Next.js + Supabase)
 
-Dashboard, Reports and Settings pages, with email + password login.
+Dashboard, Reports and Settings pages with email + password login.
 Only people you create in Supabase can sign in.
 
-## 1. Create the Supabase project
-1. Sign up at https://supabase.com and create a new project.
-2. Open **SQL Editor -> New query**, paste the contents of `supabase/schema.sql`, click **Run**.
-3. Open **Authentication -> Providers -> Email** and turn OFF "Allow new users to sign up".
-4. Open **Authentication -> Users -> Add user -> Create new user**. Enter an email and password
-   for each person who should have access (tick "Auto Confirm User").
-5. Open **Project Settings -> API** and copy the Project URL and the `anon` public key.
+## What you need installed
+- Node.js (LTS version) from https://nodejs.org  (check with: node -v)
+- A free Supabase account: https://supabase.com
+- A free GitHub and Vercel account (only for putting it online)
 
-Project URL: https://ifskqzsckviscshnxmgz.supabase.co/rest/v1/
-anon: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlmc2txenNja3Zpc2NzaG54bWd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2ODk5NjksImV4cCI6MjEwODI2NTk2OX0.BXvNW3T0HsU09J9WEqG8uqXORFY9lZqI7XHBetfgfgc
+## 1. Set up Supabase (once)
+1. Create a new project in Supabase.
+2. SQL Editor -> New query -> paste everything from supabase/schema.sql -> Run.
+3. Authentication -> Providers -> Email -> turn OFF "Allow new users to sign up".
+4. Authentication -> Users -> Add user -> Create new user. Enter email + password and tick
+   "Auto Confirm User". Do this for every person who should have access.
+5. Project Settings -> API. Copy:
+   - Project URL  (looks like https://PROJECT_ID.supabase.co  - nothing after .supabase.co)
+   - anon public key (long text starting with eyJ)
 
-## 2. Run it locally
-```
-cp .env.local.example .env.local     # then paste the two values in
-npm install
-npm run dev                          # http://localhost:3000
-```
+## 2. Run it on your computer
+1. Unzip this folder and open a terminal inside it (the folder that contains package.json).
+2. Create the settings file:
+   - Mac/Linux:  cp .env.local.example .env.local
+   - Windows:    copy .env.local.example .env.local
+3. Open .env.local in any editor and fill in (no quotes, no spaces around =):
+   NEXT_PUBLIC_SUPABASE_URL=https://PROJECT_ID.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+4. Install and start:
+   npm install
+   npm run dev
+5. Open http://localhost:3000 and sign in with a user you created.
+   Stop the server with Ctrl+C. Start it again any time with: npm run dev
+   (If you edit .env.local, stop and restart the server.)
 
-## 3. Put it online (Vercel)
-Push this folder to GitHub, import it at https://vercel.com, and add the same two
-variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) under
-**Settings -> Environment Variables**, then deploy.
+## 3. Put it online (Vercel) so you can open it from anywhere
+1. Create an empty repository on GitHub, then in this folder run:
+   git init
+   git add .
+   git commit -m "payment tracker"
+   git branch -M main
+   git remote add origin https://github.com/YOUR-NAME/YOUR-REPO.git
+   git push -u origin main
+   (.env.local is ignored by git on purpose, so your keys are not uploaded.)
+2. Go to https://vercel.com -> Add New -> Project -> import that repository.
+3. Before clicking Deploy, open Environment Variables and add the same two variables
+   (NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY). Then Deploy.
+4. Open the .vercel.app link Vercel gives you. Done.
+5. Later changes: edit files, then git add . / git commit -m "update" / git push.
+   Vercel redeploys automatically. If you change environment variables, click Redeploy.
 
-## Notes
-- Data is protected by Supabase row-level security: only signed-in users can read or write.
-  All signed-in users share the same data.
-- The login uses email addresses as usernames (that is how Supabase Auth works).
-- To move your old data from the Claude artifact version, re-enter it on the Reports page.
-
-
-http://localhost:51030
+## Troubleshooting
+- "Invalid path specified in request URL": your URL has extra text. Use only
+  https://PROJECT_ID.supabase.co
+- Login fails: confirm the user exists in Authentication -> Users and is confirmed.
+- Vercel asks you to log in to view the site: Settings -> Deployment Protection -> turn off.
+- Data is shared by all signed-in users. Usernames are email addresses.
