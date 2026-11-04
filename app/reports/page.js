@@ -12,6 +12,7 @@ const blank = () => ({ date: new Date().toISOString().slice(0, 10), ref: "", fro
 export default function Reports() {
   const { entries, rate, reload } = useData();
   const [form, setForm] = useState(null);
+  const [editId, setEditId] = useState(null);
   const [view, setView] = useState(false);
   const [upload, setUpload] = useState(false);
   const [delId, setDelId] = useState(null);
@@ -22,13 +23,26 @@ export default function Reports() {
     const a = parseInt(form.from_num, 10), b = parseInt(form.to_num, 10);
     if (!form.date || !form.ref.trim() || isNaN(a) || isNaN(b)) return setErr("Please fill in date, ID, From and To.");
     if (b < a) return setErr("To must be greater than or equal to From.");
-    const { error } = await supabase.from("entries").insert({
+    const row = {
       date: form.date, ref: form.ref.trim(), from_num: a, to_num: b,
       missing: form.missing.trim(), undelivered: form.undelivered.trim(),
-    });
+    };
+    const { error } = editId
+      ? await supabase.from("entries").update(row).eq("id", editId)
+      : await supabase.from("entries").insert(row);
     if (error) return setErr(error.message);
     setForm(null);
+    setEditId(null);
     reload();
+  }
+
+  function openEdit(e) {
+    setErr("");
+    setEditId(e.id);
+    setForm({
+      date: e.date, ref: e.ref, from_num: String(e.from_num), to_num: String(e.to_num),
+      missing: e.missing || "", undelivered: e.undelivered || "",
+    });
   }
 
   async function del() {
@@ -46,7 +60,7 @@ export default function Reports() {
           <div className="grp">
             <button className="btn ghost" onClick={() => setView(true)}>View</button>
             <button className="btn ghost" onClick={() => setUpload(true)}>Upload Excel</button>
-            <button className="btn" onClick={() => { setErr(""); setForm(blank()); }}>+ Add</button>
+            <button className="btn" onClick={() => { setErr(""); setEditId(null); setForm(blank()); }}>+ Add</button>
           </div>
         </div>
         <div className="scroll">
@@ -67,7 +81,12 @@ export default function Reports() {
                     <td data-label="Undelivered">{e.undelivered || "—"}</td>
                     <td data-label="Count" className="num">{c}</td>
                     <td data-label="Amount" className="num">{money(c * rate)}</td>
-                    <td data-label=""><button className="del" title="Delete" onClick={() => setDelId(e.id)}>🗑️</button></td>
+                    <td data-label="">
+                      <span className="acell">
+                        <button className="edit" title="Edit" onClick={() => openEdit(e)}>✏️</button>
+                        <button className="del" title="Delete" onClick={() => setDelId(e.id)}>🗑️</button>
+                      </span>
+                    </td>
                   </tr>
                 );
               })}
@@ -78,7 +97,7 @@ export default function Reports() {
       </div>
 
       {form && (
-        <Modal title="Add new data" onClose={() => setForm(null)}>
+        <Modal title={editId ? "Edit data" : "Add new data"} onClose={() => setForm(null)}>
           <div className="f"><label>Date<input type="date" value={form.date} onChange={set("date")} /></label></div>
           <div className="f"><label>ID<input value={form.ref} onChange={set("ref")} /></label></div>
           <div className="row2 f">
@@ -93,7 +112,7 @@ export default function Reports() {
           <div className="err">{err}</div>
           <div className="acts">
             <button className="btn ghost" onClick={() => setForm(null)}>Cancel</button>
-            <button className="btn" onClick={submit}>Submit</button>
+            <button className="btn" onClick={submit}>{editId ? "Save changes" : "Submit"}</button>
           </div>
         </Modal>
       )}
