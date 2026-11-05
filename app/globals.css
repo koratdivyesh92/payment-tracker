@@ -64,11 +64,32 @@ input:focus{outline:2px solid var(--accent);outline-offset:1px}
   input{font-size:16px}
   .modal{align-items:flex-end;padding:0}
   .dlg{max-width:100%;border-radius:18px 18px 0 0;max-height:92vh}
-  table.rt{min-width:0}
-  table.rt thead{display:none}
-  table.rt tr{display:block;padding:8px 14px}
-  table.rt td{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:5px 0;white-space:normal;text-align:right}
-  table.rt td::before{content:attr(data-label);color:var(--muted);font-weight:600;font-size:13px;text-align:left}
-  table.rt td.empty{display:block;text-align:center}
-  table.rt td.empty::before{content:none}
+  /* compact table, same layout as desktop */
+  table,table.rt{min-width:0;font-size:11px}
+  th,td{padding:6px 4px;white-space:normal;word-break:break-word}
+  th{font-size:10px}
+  .badge{padding:3px 8px;font-size:11px}
+  .del,.edit{padding:2px 3px;font-size:13px}
+  .acell{flex-direction:column}
+  .cmt{min-width:0}
+  .dl{display:none}.ds{display:inline}
+  .filters label{flex:1;width:auto;min-width:130px}
+  .panel{padding:10px}
 }
+
+/* extras */
+.ds{display:none}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:10px}
+.filters label{width:170px}
+.sum{color:var(--muted);font-size:13px;margin-bottom:10px}.sum b{color:var(--text)}
+.cmt{white-space:normal;min-width:120px;max-width:220px;word-break:break-word}
+.wrapc{white-space:normal;word-break:break-word;min-width:70px}
+tfoot td{background:var(--thbg);color:var(--th);font-weight:700}
+.chev{display:inline-block;width:1em;color:var(--accent)}
+table.zg>tbody:nth-of-type(odd)>tr,table.zg>tbody:nth-of-type(odd)>tr>td{background:var(--row1)}
+table.zg>tbody:nth-of-type(even)>tr,table.zg>tbody:nth-of-type(even)>tr>td{background:var(--row2)}
+table.zg tr.main{cursor:pointer}
+table.zg tr.main:hover>td{background:var(--rowh)}
+table.zg tr.detail>td{padding:6px 10px 12px}
+table.sub{min-width:0;width:100%;font-size:13px;border-radius:8px;overflow:hidden}
+@media (max-width:640px){table.sub{font-size:11px}}

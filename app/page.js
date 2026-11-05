@@ -1,19 +1,23 @@
 "use client";
+import { useState } from "react";
 import Shell from "../components/Shell";
+import D from "../components/D";
 import { supabase } from "../lib/supabase";
 import { useData } from "../lib/useData";
-import { addDays, countOf, fmt, money, periodStart } from "../lib/calc";
+import { addDays, countOf, money, periodStart } from "../lib/calc";
 
 export default function Dashboard() {
   const { entries, paid, rate, anchor, reload } = useData();
+  const [open, setOpen] = useState({});
 
   const map = {};
   entries.forEach((e) => {
     const k = periodStart(e.date, anchor);
     const c = countOf(e);
-    map[k] = map[k] || { count: 0, amount: 0 };
+    map[k] = map[k] || { count: 0, amount: 0, items: [] };
     map[k].count += c;
     map[k].amount += c * rate;
+    map[k].items.push(e);
   });
   const keys = Object.keys(map).sort().reverse();
   let earn = 0, paidAmt = 0;
@@ -35,25 +39,50 @@ export default function Dashboard() {
         <div className="card g3"><small>Total pending</small><b>{money(earn - paidAmt)}</b></div>
       </div>
       <div className="panel">
-        <div className="bar"><h2>Bi-weekly payments</h2></div>
+        <div className="bar"><h2>Bi-weekly payments</h2><span className="hint">Tap a row to see its entries</span></div>
         <div className="scroll">
-          <table className="rt">
-            <thead><tr><th>Date range</th><th className="num">Count</th><th className="num">Amount</th><th>Payment status</th></tr></thead>
-            <tbody>
-              {keys.map((k) => (
-                <tr key={k}>
-                  <td data-label="Date range">{fmt(k)} – {fmt(addDays(k, 13))}</td>
-                  <td data-label="Count" className="num">{map[k].count}</td>
-                  <td data-label="Amount" className="num">{money(map[k].amount)}</td>
-                  <td data-label="Status">
-                    <button className={"badge " + (paid.has(k) ? "paid" : "pending")} onClick={() => toggle(k)}>
-                      {paid.has(k) ? "Paid" : "Pending"}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {!keys.length && <tr><td colSpan={4} className="empty">No data yet. Add entries on the Reports page.</td></tr>}
-            </tbody>
+          <table className="zg">
+            <thead><tr><th>Date range</th><th className="num">Count</th><th className="num">Amount</th><th>Status</th></tr></thead>
+            {keys.map((k) => {
+              const isOpen = !!open[k];
+              return (
+                <tbody key={k}>
+                  <tr className="main" onClick={() => setOpen({ ...open, [k]: !isOpen })} aria-expanded={isOpen}>
+                    <td><span className="chev">{isOpen ? "▾" : "▸"}</span> <D s={k} /> – <D s={addDays(k, 13)} /></td>
+                    <td className="num">{map[k].count}</td>
+                    <td className="num">{money(map[k].amount)}</td>
+                    <td>
+                      <button
+                        className={"badge " + (paid.has(k) ? "paid" : "pending")}
+                        onClick={(ev) => { ev.stopPropagation(); toggle(k); }}
+                      >
+                        {paid.has(k) ? "Paid" : "Pending"}
+                      </button>
+                    </td>
+                  </tr>
+                  {isOpen && (
+                    <tr className="detail">
+                      <td colSpan={4}>
+                        <table className="sub">
+                          <thead><tr><th>Date</th><th>ID</th><th className="num">Count</th><th className="num">Amount</th></tr></thead>
+                          <tbody>
+                            {map[k].items.map((e) => (
+                              <tr key={e.id}>
+                                <td><D s={e.date} /></td>
+                                <td>{e.ref}</td>
+                                <td className="num">{countOf(e)}</td>
+                                <td className="num">{money(countOf(e) * rate)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              );
+            })}
+            {!keys.length && <tbody><tr><td colSpan={4} className="empty">No data yet. Add entries on the Reports page.</td></tr></tbody>}
           </table>
         </div>
       </div>

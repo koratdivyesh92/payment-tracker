@@ -59,14 +59,18 @@ Only people you create in Supabase can sign in.
 ## Uploading data from Excel (Reports page -> Upload Excel)
 Use an .xlsx file. The first sheet must have this header row (column order can change):
 
-| Date       | ID   | From | To | Missing  | Undelivered |
-|------------|------|------|----|----------|-------------|
-| 2026-11-02 | A101 | 2    | 50 | 2, 3, 15 | 23, 45      |
-| 2026-11-03 | A102 | 51   | 90 |          |             |
+| Date       | ID   | From | To | Missing  | Undelivered | Comment |
+|------------|------|------|----|----------|-------------|---------|
+| 2026-11-02 | A101 | 2    | 50 | 2, 3, 15 | 23, 45      | Checked |
+| 2026-11-03 | A102 | 51   | 90 |          |             |         |
 
 - Date: a real Excel date, or text like 2026-11-02 (required)
 - ID: any label (required)
 - From / To: whole numbers, To not less than From (required)
+- Comment: optional text
 - Missing / Undelivered: numbers separated by commas, ranges like 10-12 allowed; leave blank if none
 - The upload form has a "Download template" button that creates an empty file with only the header row (no files needed on the server). You can also upload any .xlsx from your computer.
 - After updating the project, run `npm install` once to add the Excel packages.
+
+## Updating an existing database (Comment field)
+Run supabase/add-comment.sql once in the Supabase SQL Editor.

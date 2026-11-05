@@ -16,9 +16,9 @@ const toText = (v) => String(v ?? "").trim();
 
 async function downloadTemplate() {
   const { default: writeXlsxFile } = await import("write-excel-file");
-  const header = ["Date", "ID", "From", "To", "Missing", "Undelivered"].map((value) => ({ value, fontWeight: "bold" }));
+  const header = ["Date", "ID", "From", "To", "Missing", "Undelivered", "Comment"].map((value) => ({ value, fontWeight: "bold" }));
   await writeXlsxFile([header], {
-    columns: [{ width: 14 }, { width: 12 }, { width: 10 }, { width: 10 }, { width: 24 }, { width: 24 }],
+    columns: [{ width: 14 }, { width: 12 }, { width: 10 }, { width: 10 }, { width: 24 }, { width: 24 }, { width: 30 }],
     fileName: "payment-data-template.xlsx",
   });
 }
@@ -29,7 +29,7 @@ async function parse(file) {
   if (!rows.length) throw new Error("The sheet is empty.");
   const head = rows[0].map((h) => String(h ?? "").trim().toLowerCase());
   const idx = {};
-  ["date", "id", "from", "to", "missing", "undelivered"].forEach((n) => (idx[n] = head.indexOf(n)));
+  ["date", "id", "from", "to", "missing", "undelivered", "comment"].forEach((n) => (idx[n] = head.indexOf(n)));
   const absent = ["date", "id", "from", "to"].filter((n) => idx[n] < 0);
   if (absent.length) throw new Error("Missing column(s): " + absent.join(", ") + ". Check the header row.");
 
@@ -47,6 +47,7 @@ async function parse(file) {
       date, ref, from_num: a, to_num: b,
       missing: idx.missing >= 0 ? toText(r[idx.missing]) : "",
       undelivered: idx.undelivered >= 0 ? toText(r[idx.undelivered]) : "",
+      comment: idx.comment >= 0 ? toText(r[idx.comment]) : "",
     });
   });
   return { ok, errors };
@@ -78,14 +79,14 @@ export default function ExcelUpload({ onClose, onDone }) {
       <p className="msg">Use an <b>.xlsx</b> file with this header row in the first sheet:</p>
       <div className="scroll">
         <table style={{ minWidth: 0 }}>
-          <thead><tr><th>Date</th><th>ID</th><th>From</th><th>To</th><th>Missing</th><th>Undelivered</th></tr></thead>
+          <thead><tr><th>Date</th><th>ID</th><th>From</th><th>To</th><th>Missing</th><th>Undelivered</th><th>Comment</th></tr></thead>
           <tbody>
-            <tr><td>2026-11-02</td><td>A101</td><td>2</td><td>50</td><td>2, 3, 15</td><td>23, 45</td></tr>
-            <tr><td>2026-11-03</td><td>A102</td><td>51</td><td>90</td><td></td><td></td></tr>
+            <tr><td>2026-11-02</td><td>A101</td><td>2</td><td>50</td><td>2, 3, 15</td><td>23, 45</td><td>Checked</td></tr>
+            <tr><td>2026-11-03</td><td>A102</td><td>51</td><td>90</td><td></td><td></td><td></td></tr>
           </tbody>
         </table>
       </div>
-      <p className="hint">Missing and Undelivered are optional (comma separated, ranges like 10-12 work).</p>
+      <p className="hint">Missing, Undelivered and Comment are optional (numbers comma separated, ranges like 10-12 work).</p>
       <p><button type="button" className="link" onClick={() => downloadTemplate().catch(() => setErr("Could not create the template."))}>Download template</button></p>
       <div className="f"><input type="file" accept=".xlsx" onChange={pick} /></div>
       {res && (

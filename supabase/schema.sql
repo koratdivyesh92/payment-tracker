@@ -8,6 +8,7 @@ create table entries (
   to_num int not null,
   missing text not null default '',
   undelivered text not null default '',
+  comment text not null default '',
   created_at timestamptz not null default now()
 );
 
