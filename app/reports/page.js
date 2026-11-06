@@ -4,6 +4,8 @@ import Shell from "../../components/Shell";
 import Modal from "../../components/Modal";
 import ExcelUpload from "../../components/ExcelUpload";
 import D from "../../components/D";
+import DateRange from "../../components/DateRange";
+import Pagination from "../../components/Pagination";
 import { supabase } from "../../lib/supabase";
 import { useData } from "../../lib/useData";
 import { countOf, fmt, money, rangeOf } from "../../lib/calc";
@@ -20,10 +22,15 @@ export default function Reports() {
   const [err, setErr] = useState("");
   const [df, setDf] = useState("");
   const [dt, setDt] = useState("");
+  const [size, setSize] = useState(10);
+  const [page, setPage] = useState(1);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
   const shown = entries.filter((e) => (!df || e.date >= df) && (!dt || e.date <= dt));
   const total = shown.reduce((s, e) => s + countOf(e), 0);
+  const pages = Math.max(1, Math.ceil(shown.length / size));
+  const cur = Math.min(page, pages);
+  const rows = shown.slice((cur - 1) * size, cur * size);
   const filtered = !!(df || dt);
   const rangeLabel = filtered ? `${df ? fmt(df) : "Beginning"} – ${dt ? fmt(dt) : "Latest"}` : "All dates";
 
@@ -73,9 +80,7 @@ export default function Reports() {
         </div>
 
         <div className="filters">
-          <label>From date<input type="date" value={df} max={dt || undefined} onChange={(e) => setDf(e.target.value)} /></label>
-          <label>To date<input type="date" value={dt} min={df || undefined} onChange={(e) => setDt(e.target.value)} /></label>
-          {filtered && <button className="btn ghost" onClick={() => { setDf(""); setDt(""); }}>Clear</button>}
+          <DateRange value={{ from: df, to: dt }} onChange={({ from, to }) => { setDf(from); setDt(to); setPage(1); }} />
         </div>
         <div className="sum">Showing {shown.length} of {entries.length} entries · Total count: <b>{total}</b></div>
 
@@ -85,7 +90,7 @@ export default function Reports() {
               <tr><th>Date</th><th>ID</th><th>From</th><th>To</th><th>Missing</th><th>Undelivered</th><th className="num">Count</th><th className="num">Amount</th><th>Comment</th><th></th></tr>
             </thead>
             <tbody>
-              {shown.map((e) => {
+              {rows.map((e) => {
                 const c = countOf(e);
                 return (
                   <tr key={e.id}>
@@ -115,6 +120,7 @@ export default function Reports() {
             </tbody>
           </table>
         </div>
+        {shown.length > 0 && <Pagination total={shown.length} page={cur} size={size} onPage={setPage} onSize={(n) => { setSize(n); setPage(1); }} />}
       </div>
 
       {form && (

@@ -2,6 +2,8 @@
 import { useState } from "react";
 import Shell from "../components/Shell";
 import D from "../components/D";
+import DateRange from "../components/DateRange";
+import Pagination from "../components/Pagination";
 import { supabase } from "../lib/supabase";
 import { useData } from "../lib/useData";
 import { addDays, countOf, money, periodStart } from "../lib/calc";
@@ -9,19 +11,37 @@ import { addDays, countOf, money, periodStart } from "../lib/calc";
 export default function Dashboard() {
   const { entries, paid, rate, anchor, reload } = useData();
   const [open, setOpen] = useState({});
+  const [df, setDf] = useState("");
+  const [dt, setDt] = useState("");
+  const [size, setSize] = useState(10);
+  const [page, setPage] = useState(1);
 
-  const map = {};
-  entries.forEach((e) => {
-    const k = periodStart(e.date, anchor);
-    const c = countOf(e);
-    map[k] = map[k] || { count: 0, amount: 0, items: [] };
-    map[k].count += c;
-    map[k].amount += c * rate;
-    map[k].items.push(e);
-  });
-  const keys = Object.keys(map).sort().reverse();
+  const build = (arr) => {
+    const m = {};
+    arr.forEach((e) => {
+      const k = periodStart(e.date, anchor);
+      const c = countOf(e);
+      m[k] = m[k] || { count: 0, amount: 0, items: [] };
+      m[k].count += c;
+      m[k].amount += c * rate;
+      m[k].items.push(e);
+    });
+    return m;
+  };
+
+  // payment cards always use all data
+  const all = build(entries);
   let earn = 0, paidAmt = 0;
-  keys.forEach((k) => { earn += map[k].amount; if (paid.has(k)) paidAmt += map[k].amount; });
+  Object.keys(all).forEach((k) => { earn += all[k].amount; if (paid.has(k)) paidAmt += all[k].amount; });
+
+  // the table follows the date filter
+  const filtered = !!(df || dt);
+  const list = entries.filter((e) => (!df || e.date >= df) && (!dt || e.date <= dt));
+  const map = build(list);
+  const keys = Object.keys(map).sort().reverse();
+  const pages = Math.max(1, Math.ceil(keys.length / size));
+  const cur = Math.min(page, pages);
+  const rows = keys.slice((cur - 1) * size, cur * size);
 
   async function toggle(k) {
     const r = paid.has(k)
@@ -38,12 +58,18 @@ export default function Dashboard() {
         <div className="card g2"><small>Total paid</small><b>{money(paidAmt)}</b></div>
         <div className="card g3"><small>Total pending</small><b>{money(earn - paidAmt)}</b></div>
       </div>
+
+      <div className="filters">
+        <DateRange value={{ from: df, to: dt }} onChange={({ from, to }) => { setDf(from); setDt(to); setPage(1); }} />
+      </div>
+      {filtered && <div className="sum" style={{ textAlign: "right" }}>Showing {list.length} of {entries.length} entries in the selected dates</div>}
+
       <div className="panel">
         <div className="bar"><h2>Bi-weekly payments</h2><span className="hint">Tap a row to see its entries</span></div>
         <div className="scroll">
           <table className="zg">
             <thead><tr><th>Date range</th><th className="num">Count</th><th className="num">Amount</th><th>Status</th></tr></thead>
-            {keys.map((k) => {
+            {rows.map((k) => {
               const isOpen = !!open[k];
               return (
                 <tbody key={k}>
@@ -82,9 +108,10 @@ export default function Dashboard() {
                 </tbody>
               );
             })}
-            {!keys.length && <tbody><tr><td colSpan={4} className="empty">No data yet. Add entries on the Reports page.</td></tr></tbody>}
+            {!keys.length && <tbody><tr><td colSpan={4} className="empty">{entries.length ? "No entries in this date range." : "No data yet. Add entries on the Reports page."}</td></tr></tbody>}
           </table>
         </div>
+        {keys.length > 0 && <Pagination total={keys.length} page={cur} size={size} onPage={setPage} onSize={(n) => { setSize(n); setPage(1); }} />}
       </div>
     </Shell>
   );
