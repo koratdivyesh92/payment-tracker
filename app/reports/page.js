@@ -8,7 +8,7 @@ import DateRange from "../../components/DateRange";
 import Pagination from "../../components/Pagination";
 import { supabase } from "../../lib/supabase";
 import { useData } from "../../lib/useData";
-import { countOf, fmt, money, rangeOf } from "../../lib/calc";
+import { countOf, fmt, fmtDM, money, rangeOf } from "../../lib/calc";
 
 const blank = () => ({ date: new Date().toISOString().slice(0, 10), ref: "", from_num: "", to_num: "", missing: "", undelivered: "", comment: "" });
 
@@ -154,7 +154,7 @@ export default function Reports() {
               <tbody>
                 {shown.map((e) => (
                   <tr key={e.id}>
-                    <td><D s={e.date} /></td>
+                    <td>{fmtDM(e.date)}</td>
                     <td>{rangeOf(e)}</td>
                     <td className="num">{countOf(e)}</td>
                   </tr>

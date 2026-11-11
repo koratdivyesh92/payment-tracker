@@ -2,11 +2,12 @@
 import { useState } from "react";
 import Shell from "../components/Shell";
 import D from "../components/D";
+import Modal from "../components/Modal";
 import DateRange from "../components/DateRange";
 import Pagination from "../components/Pagination";
 import { supabase } from "../lib/supabase";
 import { useData } from "../lib/useData";
-import { addDays, countOf, money, periodStart } from "../lib/calc";
+import { addDays, countOf, fmt, money, periodStart } from "../lib/calc";
 
 export default function Dashboard() {
   const { entries, paid, rate, anchor, reload } = useData();
@@ -15,6 +16,7 @@ export default function Dashboard() {
   const [dt, setDt] = useState("");
   const [size, setSize] = useState(10);
   const [page, setPage] = useState(1);
+  const [ask, setAsk] = useState(null);
 
   const build = (arr) => {
     const m = {};
@@ -80,7 +82,7 @@ export default function Dashboard() {
                     <td>
                       <button
                         className={"badge " + (paid.has(k) ? "paid" : "pending")}
-                        onClick={(ev) => { ev.stopPropagation(); toggle(k); }}
+                        onClick={(ev) => { ev.stopPropagation(); setAsk(k); }}
                       >
                         {paid.has(k) ? "Paid" : "Pending"}
                       </button>
@@ -113,6 +115,18 @@ export default function Dashboard() {
         </div>
         {keys.length > 0 && <Pagination total={keys.length} page={cur} size={size} onPage={setPage} onSize={(n) => { setSize(n); setPage(1); }} />}
       </div>
+      {ask && (
+        <Modal title={paid.has(ask) ? "Mark as pending?" : "Mark as paid?"} onClose={() => setAsk(null)}>
+          <p className="msg">
+            Are you sure you want to mark <b>{fmt(ask)} – {fmt(addDays(ask, 13))}</b> ({money(all[ask]?.amount || 0)}) as{" "}
+            <b>{paid.has(ask) ? "Pending" : "Paid"}</b>?
+          </p>
+          <div className="acts">
+            <button className="btn ghost" onClick={() => setAsk(null)}>Cancel</button>
+            <button className="btn" onClick={() => { const k = ask; setAsk(null); toggle(k); }}>Yes, confirm</button>
+          </div>
+        </Modal>
+      )}
     </Shell>
   );
 }
